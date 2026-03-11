@@ -1,0 +1,7 @@
+# Purpose: Action definition for sending a waypoint trajectory.
+geometry_msgs/PoseArray trajectory
+---
+bool success
+---
+int32 current_waypoint
+float64 distance_error
