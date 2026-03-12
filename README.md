@@ -14,7 +14,9 @@ Package Nodes
 
 Build
 ```bash
-cd /home/aaryan/robotics_navigation
+mkdir -p robotics_navigation/src
+cd /home/aaryan/robotics_navigation_ws
+git clone 
 colcon build
 source install/setup.bash
 ```
