@@ -130,17 +130,6 @@ public:
         return trajectory;
     }
 
-    bool IsOccupied(double x, double y){
-        for(const auto& obs : obstacles_){
-            double dx = x - obs.x;
-            double dy = y - obs.y;
-            if(std::sqrt(dx*dx + dy*dy) < robot_radius_){
-                return true;
-            }  
-        }
-        return false;
-    }
-
     // Score a trajectory based on heading, clearance, speed, and progress.
     double ComputeScore(const std::vector<RobotState>& traj, double v,
                         const RobotState& current_state,
@@ -279,8 +268,8 @@ private:
         cfg.max_ang_acc = 1.3;
         cfg.dt = 0.1;
         cfg.predict_time = 1.0;
-        cfg.v_samples = 7;
-        cfg.w_samples = 15;
+        cfg.v_samples = 20;
+        cfg.w_samples = 40;
         return cfg;
     }
 
@@ -299,7 +288,7 @@ private:
     bool has_goal_{false}; 
     bool has_path_{false};
     bool goal_reached_logged_{false};
-    double goal_tolerance_{0.05}; 
+    double goal_tolerance_{0.02}; 
     double lookahead_dist_{0.6};
     int current_target_index_{0};
     bool has_last_cmd_{false};
@@ -582,7 +571,7 @@ private:
         all.id = 1;
         all.type = visualization_msgs::msg::Marker::LINE_LIST;
         all.action = visualization_msgs::msg::Marker::ADD;
-        all.scale.x = 0.02;
+        all.scale.x = 0.01;
         all.color.r = 0.0f;
         all.color.g = 1.0f;
         all.color.b = 0.0f;
@@ -610,7 +599,7 @@ private:
         best.id = 2;
         best.type = visualization_msgs::msg::Marker::LINE_STRIP;
         best.action = visualization_msgs::msg::Marker::ADD;
-        best.scale.x = 0.1;
+        best.scale.x = 0.02;
         best.color.r = 1.0f;
         best.color.g = 0.0f;
         best.color.b = 0.0f;
