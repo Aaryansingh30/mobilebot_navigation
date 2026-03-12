@@ -14,8 +14,9 @@ Package Nodes
 
 Build
 ```bash
-cd /home/aaryan/trajectoryCont_ws
-colcon build --packages-select trajectory_follower_ros2
+mkdir -p robotics_navigation/src
+cd /home/aaryan/robotics_navigation
+colcon build 
 source install/setup.bash
 ```
 
