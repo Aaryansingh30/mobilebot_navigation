@@ -16,7 +16,7 @@ Build
 ```bash
 mkdir -p robotics_navigation/src
 cd /home/aaryan/robotics_navigation_ws
-git clone 
+git clone https://github.com/Aaryansingh30/mobilebot_navigation.git
 colcon build
 source install/setup.bash
 ```
