@@ -20,12 +20,15 @@ public:
         this->declare_parameter<std::string>("frame_id", "odom");
         this->declare_parameter<double>("send_delay_sec", 0.2);
 
+        // Frame used for waypoint coordinates (odom by default).
         frame_id_ = this->get_parameter("frame_id").as_string();
         send_delay_sec_ = this->get_parameter("send_delay_sec").as_double();
 
+        // Action client connects to the FollowTrajectory server.
         client_ = rclcpp_action::create_client<FollowTrajectory>(
             this, "follow_trajectory");
 
+        // Timer prevents blocking stdin on node construction.
         timer_ = this->create_wall_timer(
             std::chrono::milliseconds(
                 static_cast<int>(std::max(0.1, send_delay_sec_) * 1000.0)),
@@ -39,6 +42,7 @@ private:
         }
         waiting_for_input_ = true;
         std::string line;
+        // User enters waypoints as space-separated x,y pairs.
         std::cout << "Enter waypoints as: x1,y1 x2,y2 x3,y3 (or 'quit'): " << std::flush;
         if (!std::getline(std::cin, line)) {
             rclcpp::shutdown();
@@ -50,6 +54,7 @@ private:
         }
 
         std::vector<double> coords;
+        // Parse input into a flat list: [x1, y1, x2, y2, ...]
         if (!parseWaypoints(line, coords)) {
             RCLCPP_ERROR(this->get_logger(),
                 "Invalid input. Example: 1,1 6,7 8,8 -1,5");
@@ -63,6 +68,7 @@ private:
             return;
         }
 
+        // Build the action goal from parsed coordinates.
         auto goal_msg = FollowTrajectory::Goal();
         goal_msg.trajectory.header.frame_id = frame_id_;
         goal_msg.trajectory.header.stamp = this->now();

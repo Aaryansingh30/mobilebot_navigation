@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 TEST(TimeParam, MonotonicAndNonNegative) {
+    // Simple arc-length sequence should produce non-decreasing time stamps.
     std::vector<double> s{0.0, 0.5, 1.0, 2.0};
     auto t = compute_time_stamps(s, 0.5, 0.5);
     ASSERT_EQ(t.size(), s.size());

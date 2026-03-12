@@ -38,6 +38,7 @@ def generate_launch_description():
         default_value="true",
         description="Use simulation time",
     )
+    # Toggle to open an interactive client terminal (requires gnome-terminal).
     start_client_arg = DeclareLaunchArgument(
         name="start_client",
         default_value="true",
@@ -107,7 +108,7 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Optional interactive client in a new terminal.
+    # Optional interactive client in a new terminal (manual waypoint entry).
     client_terminal = ExecuteProcess(
         cmd=[
             "gnome-terminal", "--", "ros2", "run",

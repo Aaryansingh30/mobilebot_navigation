@@ -6,7 +6,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# Dependencies for ROS2 nodes, messages, and interfaces.
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -30,12 +30,14 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
+  # Unit test for time-parameterization utilities.
   ament_add_gtest(test_time_param test/test_time_param.cpp)
   target_include_directories(test_time_param PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 endif()
 
+# Action interface code generation.
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/FollowTrajectory.action"
   DEPENDENCIES geometry_msgs
@@ -43,6 +45,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 rosidl_get_typesupport_target(rosidl_typesupport_cpp_target
   ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+# Action server executable: smoothing + time-parameterization.
 add_executable(trajectory_action_server
   src/trajectory_action_server.cpp
   src/cubic_spline.cpp
@@ -55,6 +58,7 @@ target_include_directories(trajectory_action_server PUBLIC
 target_link_libraries(trajectory_action_server ${rosidl_typesupport_cpp_target})
 
 
+# Obstacle avoidance and tracking (DWA).
 add_executable(obs_avoidance_dwa src/obs_avoidance_dwa.cpp)
 ament_target_dependencies(obs_avoidance_dwa rclcpp geometry_msgs nav_msgs sensor_msgs tf2 visualization_msgs)
 target_include_directories(obs_avoidance_dwa PUBLIC
@@ -62,6 +66,7 @@ target_include_directories(obs_avoidance_dwa PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+# Interactive client for sending waypoints.
 add_executable(trajectory_action_client src/trajectory_action_client.cpp)
 ament_target_dependencies(trajectory_action_client rclcpp rclcpp_action geometry_msgs)
 target_include_directories(trajectory_action_client PUBLIC
@@ -70,9 +75,11 @@ target_include_directories(trajectory_action_client PUBLIC
 )
 target_link_libraries(trajectory_action_client ${rosidl_typesupport_cpp_target})
 
+# Tracking error monitor node.
 add_executable(tracking_error_monitor src/tracking_error_monitor.cpp)
 ament_target_dependencies(tracking_error_monitor rclcpp nav_msgs std_msgs)
 
+# Install runtime targets and share assets.
 install(TARGETS
   trajectory_action_server
   obs_avoidance_dwa
@@ -84,6 +91,12 @@ install(TARGETS
 install(DIRECTORY
   launch
   rviz
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# Package README for distribution.
+install(FILES
+  README.md
   DESTINATION share/${PROJECT_NAME}
 )
 ament_package()

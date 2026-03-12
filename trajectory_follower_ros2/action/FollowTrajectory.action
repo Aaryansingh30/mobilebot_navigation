@@ -1,7 +1,11 @@
 # Purpose: Action definition for sending a waypoint trajectory.
+
+# Goal: discrete waypoints (poses) to be smoothed and time-parameterized.
 geometry_msgs/PoseArray trajectory
 ---
+# Result: whether the server accepted and completed the trajectory.
 bool success
 ---
+# Feedback: current waypoint index and optional distance error.
 int32 current_waypoint
 float64 distance_error

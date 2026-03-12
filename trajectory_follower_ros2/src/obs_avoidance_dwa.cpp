@@ -367,6 +367,7 @@ private:
         has_last_exec_ = false;
     }
 
+    // Select a lookahead target along the path.
     bool GetPathTarget(RobotState& goal_state){
         if(!has_path_ || path_.poses.empty()){
             return false;
@@ -397,7 +398,7 @@ private:
     }
 
     void ControlLoop(){
-        
+        // 1) Require odom and a target (path or goal).
         if(!has_odom_ || (!has_goal_ && !has_path_)){
             geometry_msgs::msg::Twist stop_cmd;
             cmd_pub_->publish(stop_cmd);
@@ -405,6 +406,7 @@ private:
         }
 
         RobotState goal_state;
+        // 2) Prefer path lookahead; fallback to final goal.
         if(!GetPathTarget(goal_state)){
             goal_state.x = goal_.pose.position.x;
             goal_state.y = goal_.pose.position.y;
@@ -427,6 +429,7 @@ private:
             return;
         }
 
+        // 3) Sample trajectories and pick the best candidate.
         auto plan_result = planner_.SelectBestVelocity(current_state_, goal_state);
         PublishMarkers(plan_result.sampled_trajs, plan_result.best_traj, goal_state);
         geometry_msgs::msg::Twist cmd;
@@ -447,8 +450,10 @@ private:
             cmd.angular.z = plan_result.best_control.w;
         }
 
+        // 4) Apply safety filter for near obstacles.
         cmd = SafetyFilter(cmd);
 
+        // 5) Smooth commands to reduce oscillations.
         if(!has_last_cmd_){
             last_cmd_ = cmd;
             has_last_cmd_ = true;
@@ -530,6 +535,7 @@ private:
         return best;
     }
 
+    // Slow down or turn away when obstacles are too close.
     geometry_msgs::msg::Twist SafetyFilter(const geometry_msgs::msg::Twist& cmd_in){
         geometry_msgs::msg::Twist cmd_out = cmd_in;
         const double d_front = FrontMinRange();

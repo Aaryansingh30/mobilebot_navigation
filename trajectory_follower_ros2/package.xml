@@ -4,7 +4,7 @@
 <package format="3">
   <name>trajectory_follower_ros2</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Trajectory smoothing, time-parameterization, and DWA tracking for a mobile robot.</description>
   <maintainer email="johndoe@example.com">aaryan</maintainer>
   <license>TODO: License declaration</license>
 
@@ -21,6 +21,7 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
+  <!-- Required for packages that install action/service/message interfaces. -->
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>

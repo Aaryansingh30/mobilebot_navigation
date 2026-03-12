@@ -1,3 +1,4 @@
+# Purpose: RViz configuration for trajectory visualization and robot state.
 Panels:
   - Class: rviz_common/Displays
     Help Height: 78

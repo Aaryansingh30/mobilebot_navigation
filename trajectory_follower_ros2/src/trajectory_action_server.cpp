@@ -27,9 +27,11 @@ public:
             std::bind(&TrajectoryActionServer::handle_cancel, this, std::placeholders::_1),
             std::bind(&TrajectoryActionServer::handle_accepted, this, std::placeholders::_1)
         );
+        // Parameters exposed for tuning (used in time-parameterization).
         trajectory_speed_ = this->declare_parameter<double>("traj_max_vel", 0.4);
         trajectory_accel_ = this->declare_parameter<double>("traj_max_acc", 0.6);
 
+        // Planning visualization and downstream inputs.
         path_pub_ = this->create_publisher<nav_msgs::msg::Path>("/smooth_path", 10);
         rolled_path_pub_ = this->create_publisher<nav_msgs::msg::Path>("/smooth_path_from_robot", 10);
         input_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/input_waypoints", 10);
@@ -85,6 +87,7 @@ private:
         last_robot_pose_.pose = msg->pose.pose;
         has_odom_ = true;
 
+        // Re-publish the path with the fixed start pose prepended.
         nav_msgs::msg::Path rolled;
         {
             std::lock_guard<std::mutex> lock(path_mutex_);
@@ -108,10 +111,12 @@ private:
         RCLCPP_INFO(this->get_logger(), "Executing trajectory goal");
         const auto goal = goal_handle->get_goal();
 
+        // Publish raw waypoints for visualization.
         geometry_msgs::msg::PoseArray input_msg = goal->trajectory;
         input_msg.header.stamp = this->now();
         input_pub_->publish(input_msg);
 
+        // 1) Smooth waypoints into a dense path (cubic spline).
         auto dense_path = interpolator_.interpolate(goal->trajectory, interpolation_resolution_);
         if (dense_path.header.frame_id.empty()) {
             dense_path.header.frame_id = goal->trajectory.header.frame_id;
@@ -121,6 +126,7 @@ private:
         }
         RCLCPP_INFO(this->get_logger(), "Interpolated trajectory has %ld poses", dense_path.poses.size());
 
+        // 2) Publish the smoothed path as nav_msgs/Path.
         nav_msgs::msg::Path path_msg;
         path_msg.header = dense_path.header;
         path_msg.header.stamp = this->now();
@@ -133,7 +139,7 @@ private:
         }
         path_pub_->publish(path_msg);
 
-        // Time-parameterize the path with a trapezoidal velocity profile.
+        // 3) Time-parameterize the path with a trapezoidal velocity profile.
         nav_msgs::msg::Path timed_path = path_msg;
         std::vector<double> s;
         s.reserve(timed_path.poses.size());
@@ -161,12 +167,14 @@ private:
             has_start_pose_ = false;
         }
 
+        // 4) Publish final goal pose for the DWA planner.
         if (!path_msg.poses.empty()) {
             geometry_msgs::msg::PoseStamped goal_pose = path_msg.poses.back();
             goal_pose.header.stamp = this->now();
             goal_pub_->publish(goal_pose);
         }
 
+        // 5) Log time-stamped trajectory points (x, y, t).
         if (!timed_path.poses.empty()) {
             const auto t0 = timed_path.poses.front().header.stamp;
             const rclcpp::Time t0_time(t0);

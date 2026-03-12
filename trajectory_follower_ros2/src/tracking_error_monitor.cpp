@@ -11,6 +11,7 @@
 class TrackingErrorMonitor : public rclcpp::Node {
 public:
     TrackingErrorMonitor() : Node("tracking_error_monitor") {
+        // Logging period controls how often error is reported.
         this->declare_parameter<double>("log_period_sec", 0.5);
         log_period_sec_ = this->get_parameter("log_period_sec").as_double();
 
@@ -44,6 +45,7 @@ private:
         if (!has_path_ || !has_odom_) {
             return;
         }
+        // Stop reporting once the goal is declared reached.
         if (goal_reached_) {
             return;
         }
@@ -53,6 +55,7 @@ private:
             return;
         }
 
+        // Use the timed path's first stamp as time zero.
         const auto t0_msg = timed_path_.poses.front().header.stamp;
         const rclcpp::Time t0(t0_msg);
         const double t_rel = (now - t0).seconds();

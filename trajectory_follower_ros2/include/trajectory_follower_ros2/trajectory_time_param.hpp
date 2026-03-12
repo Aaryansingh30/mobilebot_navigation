@@ -7,6 +7,8 @@
 
 // Trapezoidal time-parameterization for arc-length samples.
 
+// Compute timestamps for a monotonic arc-length vector `s`.
+// Returns a vector t (seconds) with the same size as s.
 inline std::vector<double> compute_time_stamps(
     const std::vector<double> &s,
     double v_max,
@@ -20,10 +22,12 @@ inline std::vector<double> compute_time_stamps(
     v_max = std::max(0.05, v_max);
     a_max = std::max(0.05, a_max);
 
+    // Total distance to traverse.
     const double s_total = s.back();
     const double t_accel = v_max / a_max;
     const double d_accel = 0.5 * a_max * t_accel * t_accel;
 
+    // If the path is too short to reach v_max, use a triangular profile.
     const bool triangular = (2.0 * d_accel >= s_total);
     double t_peak = t_accel;
     double v_peak = v_max;
@@ -37,6 +41,7 @@ inline std::vector<double> compute_time_stamps(
 
     t.reserve(s.size());
     for (double si : s) {
+        // Compute time at distance si by inverting the profile.
         double ti = 0.0;
         if (si <= d_peak) {
             ti = std::sqrt(2.0 * si / a_max);

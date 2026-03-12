@@ -18,11 +18,13 @@ CubicSpline1D::CubicSpline1D(
     c_.resize(n);
     d_.resize(n);
 
+    // Segment widths between knot points.
     std::vector<double> h(n - 1);
 
     for (int i = 0; i < n - 1; i++)
         h[i] = x[i + 1] - x[i];
 
+    // RHS of the tridiagonal system.
     std::vector<double> alpha(n);
 
     for (int i = 1; i < n - 1; i++)
@@ -32,6 +34,7 @@ CubicSpline1D::CubicSpline1D(
             (3.0 / h[i - 1]) * (a_[i] - a_[i - 1]);
     }
 
+    // Solve tridiagonal system for second-derivative coefficients.
     std::vector<double> l(n);
     std::vector<double> mu(n);
     std::vector<double> z(n);
@@ -58,6 +61,7 @@ CubicSpline1D::CubicSpline1D(
 
     c_[n - 1] = 0.0;
 
+    // Back-substitution to compute spline coefficients.
     for (int j = n - 2; j >= 0; j--)
     {
         c_[j] =
@@ -75,6 +79,7 @@ CubicSpline1D::CubicSpline1D(
 
 int CubicSpline1D::findSegment(double t) const
 {
+    // Locate the spline segment for parameter t.
     auto it = std::upper_bound(
         x_.begin(), x_.end(), t);
 
@@ -143,6 +148,7 @@ CubicSpline2D::computeArcLength(
 
     s.push_back(0.0);
 
+    // Accumulate arc length along the piecewise-linear path.
     for (size_t i = 1; i < x.size(); i++)
     {
         double dx = x[i] - x[i - 1];
@@ -222,6 +228,7 @@ CubicSplineInterpolator::interpolate(
     double s_max =
         spline.getMaxArcLength();
 
+    // Sample the spline at fixed arc-length increments.
     for (double s = 0.0; s <= s_max; s += resolution)
     {
         auto pos = spline.calcPosition(s);
