@@ -1,4 +1,4 @@
-# trajectory_follower_ros2
+# mobilebot_navigation
 
 Purpose
 - Smooth waypoint paths with cubic splines
