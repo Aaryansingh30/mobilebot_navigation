@@ -15,6 +15,7 @@ Package Nodes
 Build
 ```bash
 mkdir -p robotics_navigation/src
+git clone https://github.com/Aaryansingh30/mobilebot_navigation.git
 cd /home/aaryan/robotics_navigation
 colcon build 
 source install/setup.bash
